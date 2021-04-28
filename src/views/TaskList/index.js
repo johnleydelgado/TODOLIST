@@ -6,6 +6,7 @@ const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 import ioClient from 'socket.io-client';
+PouchDB.plugin(require('pouchdb-load'));
 
 const socketClient = ioClient('http://192.168.100.69:4000');
 
@@ -19,16 +20,13 @@ function index(props) {
   var localDB = new PouchDB('someLocalDB');
 
   localDB
-    .allDocs({ include_docs: true, descending: true })
-    .then((result) => console.log(result))
-    .catch((err) => console.log(err));
+  .allDocs({ include_docs: true, descending: true })
+  .then((result) => console.log(result))
+  .catch((err) => console.log(err));
 
   useEffect(() => {
     io.on('connection', function (socket) {
-      console.log(socket, 'user connected');
-      socket.on('message', (data) => {
-        console.log('message', data);
-      });
+
     });
 
     http.listen(4000, function () {
@@ -39,8 +37,17 @@ function index(props) {
   useEffect(() => {
     socketClient.on('connect', () => {
       // either with send()
-      socketClient.send('Hello!');
+      // socketClient.send('Hello there mac');
     });
+    socketClient.on('database',(data) => {
+      // console.log(data.pouchdb);
+      localDB.load(data.pouchdb).then(function () {
+        console.log('done');
+        // done loading!
+      }).catch(function (err) {
+        // any possible errors
+      });
+    })
   }, []);
 
   const submitHandler = () => {

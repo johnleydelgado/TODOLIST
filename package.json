@@ -260,6 +260,7 @@
     "lanscanner": "^0.0.5",
     "local-devices": "^3.1.0",
     "pouch-stream-server": "^0.2.1",
+    "pouchdb-load": "^1.4.6",
     "react": "^17.0.1",
     "react-bootstrap": "^1.5.2",
     "react-dom": "^17.0.1",
