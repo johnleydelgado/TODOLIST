@@ -7,6 +7,8 @@ const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 import ioClient from 'socket.io-client';
+PouchDB.plugin(replicationStream.plugin);
+PouchDB.adapter('writableStream', replicationStream.adapters.writableStream);
 PouchDB.plugin(require('pouchdb-load'));
 import fs from 'fs';
 
@@ -19,23 +21,22 @@ function index(props) {
   const handleClose2 = () => setShowMTL(false);
   const handleShow2 = () => setShowMTL(true);
 
-  PouchDB.plugin(replicationStream.plugin);
-  PouchDB.adapter('writableStream', replicationStream.adapters.writableStream);
-
   var dumpedString = '';
   var stream = new MemoryStream();
   stream.on('data', function (chunk) {
     dumpedString += chunk.toString();
   });
 
-  var localDB = new PouchDB('someLocalDB');
-  const ws = fs.createWriteStream('someLocalDB/someLocal.txt');
-  const rs = fs.createReadStream('someLocalDB/someLocal.txt');
+  var localDB = new PouchDB('emrDb');
+  var remoteDB = new PouchDB('emrDbRemote');
 
-  localDB
-  .allDocs({ include_docs: true, descending: true })
-  .then((result) => console.log(result))
-  .catch((err) => console.log(err));
+  // const ws = fs.createWriteStream('someLocalDB/someLocal.txt');
+  // const rs = fs.createReadStream('someLocalDB/someLocal.txt');
+
+  remoteDB
+    .allDocs({ include_docs: true, descending: true })
+    .then((result) => console.log(result))
+    .catch((err) => console.log(err));
 
   //Server
   useEffect(() => {
@@ -43,6 +44,7 @@ function index(props) {
       localDB
         .dump(stream)
         .then(function () {
+          console.log('sadasd', dumpedString);
           socket.emit('database', { pouchdb: dumpedString });
         })
         .catch(function (err) {
@@ -57,17 +59,25 @@ function index(props) {
 
   // Client
   useEffect(() => {
-    socketClient.on('connect', () => {
-    });
-    socketClient.on('database',(data) => {
+    socketClient.on('connect', () => {});
+    socketClient.on('database', (data) => {
       // console.log(data.pouchdb);
-      localDB.load(data.pouchdb).then(function () {
-        console.log('done');
-        // done loading!
-      }).catch(function (err) {
-        // any possible errors
-      });
-    })
+      remoteDB
+        .load(data.pouchdb)
+        .then(function () {
+          console.log('done');
+          localDB
+            .sync(remoteDB)
+            .on('complete', () => {
+              console.log('Done Sync');
+            })
+            .on('error', (err) => {});
+          // done loading!
+        })
+        .catch(function (err) {
+          // any possible errors
+        });
+    });
   }, []);
 
   const submitHandler = () => {
