@@ -1,16 +1,18 @@
 import ioClient from 'socket.io-client';
+import PouchDB from 'pouchdb';
 import { Database } from '.';
 
-const socketClient = ioClient('http://192.168.100.15:4000');
 
 const clientConnection = (callback) => {
+const socketClient = ioClient('http://192.168.100.69:4000');
+
   socketClient.on('connect', () => {});
   socketClient.on('database', (data) => {
-    // console.log(data.pouchdb);
+    console.log(data.pouchdb);
     Database.remoteDB
       .load(data.pouchdb)
       .then(function () {
-        localDB
+        Database.localDB
           .sync(Database.remoteDB)
           .on('complete', () => {
             console.log('Done Syncing !');

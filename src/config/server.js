@@ -1,21 +1,21 @@
 import PouchDB from 'pouchdb';
 import { Database } from './index';
-import replicationStream from 'pouchdb-replication-stream/dist/pouchdb.replication-stream';
 import MemoryStream from 'memorystream';
+
 const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
-PouchDB.plugin(replicationStream.plugin);
-PouchDB.adapter('writableStream', replicationStream.adapters.writableStream);
 
-var dumpedString = '';
-var stream = new MemoryStream();
-stream.on('data', function (chunk) {
-  dumpedString += chunk.toString();
-});
 
 const serverInit = () => {
+
+  var dumpedString = '';
+  var stream = new MemoryStream();
+  stream.on('data', function (chunk) {
+    dumpedString += chunk.toString();
+  });
+
   io.on('connection', function (socket) {
     Database.localDB
       .dump(stream)

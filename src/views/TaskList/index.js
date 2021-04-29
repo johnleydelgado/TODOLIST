@@ -17,7 +17,7 @@ function index(props) {
   const [dataDb, setDataDb] = useState([]);
 
   useEffect(() => {
-    // Server();
+    Server();
     setDataDb([]);
     Database.localDB
       .allDocs({ include_docs: true, descending: true })
@@ -30,13 +30,14 @@ function index(props) {
   }, []);
 
   // useEffect(() => {
-  //   clientSyncing();
+  //   Client();
+  //   getData();
   // }, []);
 
   const clientSyncing = () => {
     Client((result) => {
+      alert(result);
       if (result) {
-        alert('asd');
         setDataDb([]);
         getData();
       } else {
@@ -103,7 +104,7 @@ function index(props) {
             paddingTop: 8,
           }}
           className="cursor-pointer"
-          onClick={() => clientSyncing()}
+          onClick={clientSyncing}
         >
           <FontAwesomeIcon icon={faSync} size="lg" />
         </div>
