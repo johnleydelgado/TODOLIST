@@ -6,8 +6,6 @@ const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
-
-
 const serverInit = () => {
 
   var dumpedString = '';
@@ -17,6 +15,12 @@ const serverInit = () => {
   });
 
   io.on('connection', function (socket) {
+    let dumpedString = '';
+    let stream = new MemoryStream();
+    stream.on('data', function (chunk) {
+      dumpedString += chunk.toString();
+    });
+
     Database.localDB
       .dump(stream)
       .then(function () {
