@@ -1,19 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import PouchDB from 'pouchdb';
-import replicationStream from 'pouchdb-replication-stream/dist/pouchdb.replication-stream';
-import MemoryStream from 'memorystream';
 import { NavBar, TodoListCard, TodoListModal } from '../../components';
-const app = require('express')();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
-import ioClient from 'socket.io-client';
-PouchDB.plugin(replicationStream.plugin);
-PouchDB.adapter('writableStream', replicationStream.adapters.writableStream);
-PouchDB.plugin(require('pouchdb-load'));
+
 import fs from 'fs';
+import { Server, Client, Database } from '../../config';
 
-const socketClient = ioClient('http://192.168.100.15:4000');
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSync } from '@fortawesome/free-solid-svg-icons';
 function index(props) {
   const [showMTL, setShowMTL] = useState(false);
   const [todoData, setTodoData] = useState({});
@@ -21,68 +14,52 @@ function index(props) {
   const handleClose2 = () => setShowMTL(false);
   const handleShow2 = () => setShowMTL(true);
 
-  var dumpedString = '';
-  var stream = new MemoryStream();
-  stream.on('data', function (chunk) {
-    dumpedString += chunk.toString();
-  });
+  const [dataDb, setDataDb] = useState([]);
 
-  var localDB = new PouchDB('emrDb');
-  var remoteDB = new PouchDB('emrDbRemote');
-
-  // const ws = fs.createWriteStream('someLocalDB/someLocal.txt');
-  // const rs = fs.createReadStream('someLocalDB/someLocal.txt');
-
-  remoteDB
-    .allDocs({ include_docs: true, descending: true })
-    .then((result) => console.log(result))
-    .catch((err) => console.log(err));
-
-  //Server
   useEffect(() => {
-    io.on('connection', function (socket) {
-      localDB
-        .dump(stream)
-        .then(function () {
-          console.log('sadasd', dumpedString);
-          socket.emit('database', { pouchdb: dumpedString });
+    // Server();
+    setDataDb([]);
+    Database.localDB
+      .allDocs({ include_docs: true, descending: true })
+      .then((result) =>
+        result.rows.forEach((item) => {
+          setDataDb((prevArr) => [...prevArr, item.doc]);
         })
-        .catch(function (err) {
-          console.log('oh no an error', err);
-        });
-    });
-
-    http.listen(4000, function () {
-      console.log('listen 4000');
-    });
+      )
+      .catch((err) => console.log(err));
   }, []);
 
-  // Client
-  useEffect(() => {
-    socketClient.on('connect', () => {});
-    socketClient.on('database', (data) => {
-      // console.log(data.pouchdb);
-      remoteDB
-        .load(data.pouchdb)
-        .then(function () {
-          console.log('done');
-          localDB
-            .sync(remoteDB)
-            .on('complete', () => {
-              console.log('Done Sync');
-            })
-            .on('error', (err) => {});
-          // done loading!
-        })
-        .catch(function (err) {
-          // any possible errors
-        });
+  // useEffect(() => {
+  //   clientSyncing();
+  // }, []);
+
+  const clientSyncing = () => {
+    Client((result) => {
+      if (result) {
+        alert('asd');
+        setDataDb([]);
+        getData();
+      } else {
+        alert('Error');
+      }
     });
-  }, []);
+  };
+
+  const getData = () => {
+    setDataDb([]);
+    Database.localDB
+      .allDocs({ include_docs: true, descending: true })
+      .then((result) =>
+        result.rows.forEach((item) => {
+          setDataDb((prevArr) => [...prevArr, item.doc]);
+        })
+      )
+      .catch((err) => console.log(err));
+  };
 
   const submitHandler = () => {
     // setFetching(false);
-    localDB
+    Database.localDB
       .put({
         _id: todoData.id,
         createdBy: todoData.createdBy,
@@ -91,6 +68,7 @@ function index(props) {
       .then(function (response) {
         setShowMTL(false);
         setTodoData({});
+        getData();
       })
       .catch(function (err) {
         console.log(err);
@@ -101,10 +79,10 @@ function index(props) {
     <>
       <NavBar handleShowTodo={handleShow2} />
       <div
-        class="jumbotron centerAlignment"
+        className="jumbotron centerAlignment"
         style={{ height: '100%', backgroundColor: 'white' }}
       >
-        <TodoListCard />
+        <TodoListCard data={dataDb} />
         <TodoListModal
           show2={showMTL}
           setShow2={setShowMTL}
@@ -112,6 +90,23 @@ function index(props) {
           todoData={todoData}
           submitHandler={() => submitHandler()}
         />
+        <div
+          style={{
+            position: 'absolute',
+            right: 8,
+            bottom: 8,
+            height: 42,
+            width: 42,
+            background: '#563d7c',
+            borderRadius: 40,
+            textAlign: 'center',
+            paddingTop: 8,
+          }}
+          className="cursor-pointer"
+          onClick={() => clientSyncing()}
+        >
+          <FontAwesomeIcon icon={faSync} size="lg" />
+        </div>
       </div>
     </>
   );

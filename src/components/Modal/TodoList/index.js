@@ -41,39 +41,50 @@ const index = ({ show2, setShow2, submitHandler, setData, todoData }) => {
         <Modal.Body className="text-secondary">
           <Container>
             <Form>
-              <FormTextInput
-                title="ID"
-                placeholder="Enter Id"
-                value={todoData.id}
-                onChangeText={(txt) =>
-                  setData((prevState) => ({
-                    ...prevState,
-                    id: txt.target.value,
-                  }))
-                }
-              />
-              <FormTextInput
-                title="Name"
-                placeholder="Enter name"
-                value={todoData.createdBy}
-                onChangeText={(txt) =>
-                  setData((prevState) => ({
-                    ...prevState,
-                    createdBy: txt.target.value,
-                  }))
-                }
-              />
-              <FormTextInput
-                title="Task"
-                placeholder="Enter task"
-                value={todoData.todo}
-                onChangeText={(txt) =>
-                  setData((prevState) => ({
-                    ...prevState,
-                    todo: txt.target.value,
-                  }))
-                }
-              />
+              <Form.Group>
+                <Form.Label>ID</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={todoData.id}
+                  placeholder="Enter Id"
+                  onChange={(txt) =>
+                    setData((prevState) => ({
+                      ...prevState,
+                      id: txt.target.value,
+                    }))
+                  }
+                />
+              </Form.Group>
+
+              <Form.Group>
+                <Form.Label>Created By</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={todoData.createdBy}
+                  placeholder="Enter Id"
+                  onChange={(txt) =>
+                    setData((prevState) => ({
+                      ...prevState,
+                      createdBy: txt.target.value,
+                    }))
+                  }
+                />
+              </Form.Group>
+
+              <Form.Group>
+                <Form.Label>Enter task</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={todoData.todo}
+                  placeholder="Enter Todo"
+                  onChange={(txt) =>
+                    setData((prevState) => ({
+                      ...prevState,
+                      todo: txt.target.value,
+                    }))
+                  }
+                />
+              </Form.Group>
             </Form>
           </Container>
         </Modal.Body>

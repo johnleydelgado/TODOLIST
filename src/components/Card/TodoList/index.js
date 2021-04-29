@@ -3,20 +3,27 @@ import React, { Component } from 'react';
 import { Card } from 'react-bootstrap';
 
 // create a component
-const index = () => {
+const index = ({ data }) => {
   return (
-    <Card
-      style={{ width: '100%', borderRadius: 15, backgroundColor: '#563d7c' }}
-    >
-      <Card.Body>
-        <Card.Title>Card Title</Card.Title>
-        <Card.Subtitle className="mb-2">Card Subtitle</Card.Subtitle>
-        <Card.Text>
-          Some quick example text to build on the card title and make up the
-          bulk of the card's content.
-        </Card.Text>
-      </Card.Body>
-    </Card>
+    <>
+      {data.map((item) => (
+        <Card
+          style={{
+            width: '100%',
+            borderRadius: 15,
+            backgroundColor: '#563d7c',
+            marginBottom: 16,
+          }}
+          key={item._id}
+        >
+          <Card.Body>
+            <Card.Title>{item._id}</Card.Title>
+            <Card.Subtitle className="mb-2">{item.createdBy}</Card.Subtitle>
+            <Card.Text>{item.todo}</Card.Text>
+          </Card.Body>
+        </Card>
+      ))}
+    </>
   );
 };
 

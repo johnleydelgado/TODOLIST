@@ -53,7 +53,7 @@ const index = ({ handleShowTodo }) => {
             <Container>
               {ipList.map((item) => {
                 return (
-                  <Row>
+                  <Row key={item.ip}>
                     <Col xs={6}>
                       <p>{item.ip}</p>
                     </Col>
