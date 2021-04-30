@@ -44,6 +44,14 @@ function index(props) {
         alert('Error');
       }
     });
+
+    // For mobile
+    Database.localDB
+    .sync(Database.remoteDB)
+    .on('complete', () => {
+      getData();
+    })
+    .on('error', (err) => console.log('err',err));
   };
 
   const getData = () => {
